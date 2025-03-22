@@ -42,13 +42,13 @@ func ExecuteCode(job *types.Job) error {
 
 	if job.Language == "python" {
 		fileEx = ".py"
-		image = "py-img-lc"
+		image = os.Getenv("PY_IMG")
 	} else if job.Language == "java" {
 		fileEx = ".java"
-		image = "java-img-lc"
+		image = os.Getenv("JAVA_IMG")
 	} else if job.Language == "c" {
 		fileEx = ".c"
-		image = "c-img-lc"
+		image = os.Getenv("C_IMG")
 	}
 
 	submissionDir := fmt.Sprintf("submission/%s", job.JobID)

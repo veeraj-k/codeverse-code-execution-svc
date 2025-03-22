@@ -15,6 +15,7 @@ var conn *amqp091.Connection
 
 func init() {
 	config.LoadEnv()
+	config.LoadImages()
 	util.NewHttpClient()
 }
 

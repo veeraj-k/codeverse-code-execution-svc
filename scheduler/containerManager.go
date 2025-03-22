@@ -57,7 +57,7 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 		return err
 	}
 	fmt.Println("Container Started")
-	waitCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	waitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	waitC, errC := apiclient.ContainerWait(waitCtx, resp.ID, "")
@@ -71,8 +71,6 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 			return nil
 		} else if val.StatusCode == 137 {
 			return fmt.Errorf("resource Limit Exceeded")
-		} else {
-			return fmt.Errorf("container exited with status code %d", val.StatusCode)
 		}
 
 	case err := <-errC:
