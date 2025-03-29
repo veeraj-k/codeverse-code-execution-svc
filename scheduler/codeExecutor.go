@@ -56,7 +56,7 @@ func ExecuteCode(job *types.Job) error {
 		return err
 	}
 
-	runnerFilePath := fmt.Sprintf("%s/Evaluator%s", submissionDir, fileEx)
+	runnerFilePath := fmt.Sprintf("%s/Runner%s", submissionDir, fileEx)
 	runnerFile, err := os.Create(runnerFilePath)
 	if err != nil {
 		return err

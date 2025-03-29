@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"lc-code-execution-service/types"
 	"log"
+	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -30,6 +32,18 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 		log.Fatalf("Error getting absolute path: %v", err)
 	}
 
+	var mem = os.Getenv("MEMORY")
+	var cpu = os.Getenv("CPU")
+
+	memory, err := strconv.Atoi(mem)
+	if err != nil {
+		log.Fatalf("Error converting memory to int: %v", err)
+	}
+	cpu_limit, err := strconv.Atoi(cpu)
+	if err != nil {
+		log.Fatalf("Error converting cpu to int: %v", err)
+	}
+
 	resp, err := apiclient.ContainerCreate(ctx, &container.Config{
 		Image: image,
 	}, &container.HostConfig{
@@ -38,12 +52,12 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 			{
 				Type:   mount.TypeBind,
 				Source: absolutePath,
-				Target: "/app",
+				Target: "/app/code",
 			},
 		},
 		Resources: container.Resources{
-			Memory:   256 * 1024 * 1024, // 256MB
-			NanoCPUs: 250000000,         // 0.5 CPU (500ms CPU time per second)
+			Memory:   int64(memory) * 1024 * 1024,  // 256MB
+			NanoCPUs: int64(cpu_limit) * 100000000, // 0.5 CPU (500ms CPU time per second)
 		},
 		AutoRemove: true,
 	}, nil, nil, "submission_"+job.JobID)
@@ -56,8 +70,15 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 	if err := apiclient.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return err
 	}
+
+	max := os.Getenv("MAX_EXECUTION_TIME")
+	maxExecutionTime, err := strconv.Atoi(max)
+	if err != nil {
+		log.Fatalf("Error converting max execution time to int: %v", err)
+	}
+
 	fmt.Println("Container Started")
-	waitCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	waitCtx, cancel := context.WithTimeout(ctx, time.Duration(maxExecutionTime)*time.Second)
 	defer cancel()
 
 	waitC, errC := apiclient.ContainerWait(waitCtx, resp.ID, "")
@@ -76,6 +97,7 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 	case err := <-errC:
 		if err != nil {
 			fmt.Println("ErrC received:", err)
+			apiclient.ContainerStop(ctx, resp.ID, container.StopOptions{})
 			return err
 		}
 	}
