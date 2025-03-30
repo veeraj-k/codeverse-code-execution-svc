@@ -104,6 +104,12 @@ func ExecuteCode(job *types.Job) error {
 		return err
 	}
 
+	opFile, err := os.Create(fmt.Sprintf("%s/output.json", submissionDir))
+	if err != nil {
+		return err
+	}
+	defer opFile.Close()
+
 	// time.Sleep(1000 * time.Millisecond)
 	fmt.Println("Spinning up container")
 

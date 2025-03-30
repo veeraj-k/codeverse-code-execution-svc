@@ -43,7 +43,8 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 	if err != nil {
 		log.Fatalf("Error converting cpu to int: %v", err)
 	}
-
+	fmt.Println("Abs path: ", absolutePath)
+	fmt.Println("Mounted Path: ", path)
 	resp, err := apiclient.ContainerCreate(ctx, &container.Config{
 		Image: image,
 	}, &container.HostConfig{
@@ -51,7 +52,7 @@ func SpinUpContainer(job types.Job, path string, image string) error {
 		Mounts: []mount.Mount{
 			{
 				Type:   mount.TypeBind,
-				Source: absolutePath,
+				Source: os.Getenv("MOUNT_PATH") + path,
 				Target: "/app/code",
 			},
 		},
