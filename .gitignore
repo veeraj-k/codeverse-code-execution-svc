@@ -2,8 +2,6 @@
 # go.sum
 .vscode
 dock-test
-Dockerfile
-.dockerignore
 submission
 tmp
 .air.toml
