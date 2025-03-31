@@ -55,6 +55,9 @@ func ExecuteCode(job *types.Job) error {
 	if err := os.MkdirAll(submissionDir, os.ModePerm); err != nil {
 		return err
 	}
+	if err := os.Chmod(submissionDir, 0777); err != nil {
+		return err
+	}
 
 	runnerFilePath := fmt.Sprintf("%s/Runner%s", submissionDir, fileEx)
 	runnerFile, err := os.Create(runnerFilePath)
@@ -109,6 +112,9 @@ func ExecuteCode(job *types.Job) error {
 		return err
 	}
 	defer opFile.Close()
+	if err := os.Chmod(opFile.Name(), 0666); err != nil {
+		return err
+	}
 
 	// time.Sleep(1000 * time.Millisecond)
 	fmt.Println("Spinning up container")
